@@ -1,0 +1,28 @@
+test-warnings: true
+strictness: veryhigh
+
+ignore-paths:
+  - docs
+  - migrations
+  - templates
+  - codegen_templates
+  - .venv
+  - _project_/settings_local.py
+  - _project_/celery_config.py
+  - README.md
+
+pylint:
+  options:
+    jobs: 8
+  disable:
+    - unused-argument
+    - too-few-public-methods
+    - too-many-arguments
+    - too-many-ancestors
+    - redefined-outer-name
+    - relative-beyond-top-level
+    - abstract-method
+    - no-self-use
+    - import-outside-toplevel
+    - no-else-return
+    - unnecessary-pass

@@ -1,0 +1,90 @@
+image: quay.io/pik-software/base-django:3.7
+
+stages:
+  - validate
+  - deploy
+
+default:
+  cache:
+    key:
+      files:
+        - requirements.txt
+    paths:
+      - .venv
+  before_script:
+    - python -m venv .venv
+    - source .venv/bin/activate
+    - pip install -r requirements.txt
+
+# validate
+lint:
+  stage: validate
+  script:
+    - prospector --profile-path . --profile .prospector.yaml .
+
+test:
+  stage: validate
+  services:
+    - name: redis:latest
+      alias: redis
+    - name: mdillon/postgis:11
+      alias: postgres
+  variables:
+    ENVIRONMENT: test
+    POSTGRES_DB: ${CI_PROJECT_NAME}
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+    POSTGRES_HOST: postgres
+    REDIS_URL: redis://redis:6379
+    DATABASE_URL: postgres://postgres:postgres@postgres:5432/${CI_PROJECT_NAME}
+  script:
+    - echo -e "SECRET_KEY = 'not so sectret!'\n" > ./_project_/settings_local.py
+    - python manage.py makemigrations --dry-run --check
+    - python manage.py migrate
+    - python manage.py check
+    - pytest --junitxml=junit.xml --cov .
+  artifacts:
+    reports:
+      junit: junit.xml
+
+# deploy
+.deploy_template:
+  image: quay.io/pik-software/deploy
+  stage: deploy
+  cache: {}
+  environment:
+    name: dev
+    url: suidp-stage.dev.local
+  variables:
+    REPO: $CI_PROJECT_NAME
+    BRANCH: $CI_COMMIT_REF_NAME
+    HOST: $CI_ENVIRONMENT_URL
+    PORT: 22
+  before_script:
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_CIRCLECI" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -p $PORT $HOST >> ~/.ssh/known_hosts
+    - cat ~/.ssh/known_hosts
+    - echo -e "\nHost $HOST\n  HostName $HOST\n  Port $PORT" >> ~/.ssh/config
+    - cat ~/.ssh/config
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - .deploy/deploy.sh $HOST $PORT $REPO $BRANCH
+
+deploy_stage:
+  extends: .deploy_template
+  environment:
+    name: stage
+  only:
+    - stage
+
+deploy_master:
+  extends: .deploy_template
+  environment:
+    name: production
+    url: suidp.dev.local
+  when: manual
+  only:
+    - master

@@ -1,0 +1,21 @@
+body, html {
+    height: 100%;
+}
+
+body {
+    padding-top: 70px;
+}
+
+.big-form .form-control {
+  border-radius: 0;
+  border: none;
+  border-bottom: 2px solid #bdc3c7;
+}
+
+.big-form .form-control:focus {
+  border-color: #1abc9c;
+}
+
+.big-form .btn {
+  font-size: 18px;
+}
