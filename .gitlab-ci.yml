@@ -27,7 +27,7 @@ test:
   services:
     - name: redis:latest
       alias: redis
-    - name: mdillon/postgis:11
+    - name: postgres:latest
       alias: postgres
   variables:
     ENVIRONMENT: test
@@ -61,6 +61,7 @@ test:
     HOST: $CI_ENVIRONMENT_URL
     PORT: 22
   before_script:
+    # https://gitlab.com/gitlab-examples/ssh-private-key/blob/master/.gitlab-ci.yml
     - eval $(ssh-agent -s)
     - echo "$SSH_PRIVATE_CIRCLECI" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
@@ -76,7 +77,7 @@ test:
 deploy_stage:
   extends: .deploy_template
   environment:
-    name: stage
+    name: staging
   only:
     - stage
 

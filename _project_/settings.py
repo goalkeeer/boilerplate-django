@@ -11,7 +11,11 @@ BASE_DIR_NAME = os.path.basename(BASE_DIR)
 DATA_DIR = os.path.join(BASE_DIR, '__data__')
 SERVICE_NAME = os.environ.get('SERVICE_NAME', BASE_DIR_NAME)
 
-SERVICE_TITLE = 'Сервис'
+DOMAIN = os.getenv('DOMAIN', 'https://suidp-stage.pik-software.ru')
+
+SERVICE_TITLE = 'СУИДП'
+
+AUTH_USER_MODEL = 'user_profile.User'
 
 REDIS_URL = os.environ.get(
     'REDIS_URL',
@@ -27,7 +31,7 @@ DATABASE_URL = os.environ.get(
 DEBUG = False
 SECRET_KEY = os.environ.get('SECRET_KEY', '~+%iawwf2@R!@nakwe%jcAWKJF1asdAFw2')
 
-ENVIRONMENT = os.environ.get('ENVIRONMENT', 'stage')
+ENVIRONMENT = os.environ.get('ENVIRONMENT', 'staging')
 
 ALLOWED_HOSTS = ['*']
 INTERNAL_IPS = ['127.0.0.1']
@@ -57,11 +61,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.postgres',
-    'django.contrib.gis',
 
     '_project_',
 
     # APPS
+    'user_profile',
 
     # HISTORY
     'simple_history',
@@ -122,7 +126,7 @@ TEMPLATES = [
 DATABASES = {
     'default': dj_database_url.parse(
         DATABASE_URL,
-        engine='django.contrib.gis.db.backends.postgis'
+        engine='django.db.backends.postgresql'
     )
 }
 DATABASES['default']['ATOMIC_REQUESTS'] = True
@@ -193,18 +197,7 @@ STATICFILES_DIRS = [
     os.path.join(PROJECT_DIR, 'static'),
 ]
 
-EMAIL_USE_TLS = True
-EMAIL_HOST = os.environ.get('EMAIL_HOST')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-
 MEDIA_URL = '/media/'
-# TODO(GregEremeev) MEDIUM: At this moment, we use a common gCloud
-# storage for all services. That's why we need to use some service specific
-# path prefix(MEDIA_ROOT_PROJECT_PATH_PREFIX)
-# to share the storage with all services without collisions
-MEDIA_ROOT_PROJECT_PATH_PREFIX = os.environ.get('SERVICE_NAME', 'suidp')
 MEDIA_ROOT = os.environ.get('MEDIA_ROOT', os.path.join(DATA_DIR, 'media'))
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'

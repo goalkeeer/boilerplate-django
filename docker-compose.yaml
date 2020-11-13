@@ -4,7 +4,7 @@ services:
   redis:
     image: redis:4.0.11
   db:
-    image: mdillon/postgis:10
+    image: postgres:13
     volumes:
       - ./psql_dump:/psql_dump
     ports:
